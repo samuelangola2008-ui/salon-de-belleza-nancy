@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.E.A Versátil — Belleza Auténtica</title>
+    <meta name="description" content="C.E.A Versátil: Salón de belleza en Cali. Uñas, extensiones de cabello humano, productos naturales y más. Realzamos tu mirada con cejas y pestañas.">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://picsum.photos https://i.pravatar.cc data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#8B5CF6">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+<!-- ===== MOBILE OVERLAY ===== -->
+<div id="mobileOverlay" class="mobile-overlay" aria-hidden="true"></div>
+
+<!-- ===== MOBILE NAV ===== -->
+<nav id="mobileNav" class="mobile-nav" role="navigation" aria-label="Menú móvil">
+    <div class="flex justify-between items-center mb-8">
+        <span class="font-playfair font-bold text-xl gradient-text">C.E.A</span>
+        <button id="closeMobileBtn" class="text-gray-500 hover:text-gray-800 text-2xl" aria-label="Cerrar menú">&times;</button>
+    </div>
+    <ul id="mobileNavList" class="space-y-5 text-lg"></ul>
+    <div class="mt-8 pt-6 border-t border-gray-100">
+        <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="flex items-center gap-3 text-green-600 font-medium hover:text-green-700 transition">
+            <i class="fab fa-whatsapp text-xl"></i> 317 3933141
+        </a>
+    </div>
+</nav>
+
+<!-- ===== CART OVERLAY ===== -->
+<div id="cartOverlay" class="cart-overlay" aria-hidden="true"></div>
+
+<!-- ===== CART SIDEBAR ===== -->
+<aside id="cartSidebar" class="cart-sidebar" role="dialog" aria-label="Carrito de compras">
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+        <h2 class="font-playfair text-xl font-bold flex items-center gap-2">
+            <i class="fas fa-shopping-bag text-purple-600"></i> Tu Carrito
+        </h2>
+        <button id="closeCartBtn" class="text-gray-400 hover:text-gray-700 text-2xl" aria-label="Cerrar carrito">&times;</button>
+    </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4">
+        <!-- rendered by JS -->
+    </div>
+    <div class="border-t border-gray-100 p-5 space-y-3">
+        <div class="flex justify-between text-lg font-semibold">
+            <span>Total</span>
+            <span id="cartTotal">$0</span>
+        </div>
+        <button id="checkoutBtn" class="btn-primary w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
+            <i class="fas fa-lock"></i> Proceder al Pago
+        </button>
+        <p class="text-xs text-gray-400 text-center">Pago 100% seguro 🔒</p>
+    </div>
+</aside>
+
+<!-- ===== HEADER ===== -->
+<header class="fixed top-0 left-0 w-full z-50 glass" role="banner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 md:h-20">
+            <!-- Logo -->
+            <a href="#hero" class="flex items-center gap-2 group" aria-label="Ir al inicio">
+                <span class="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm">C</span>
+                <span class="font-playfair font-bold text-xl gradient-text">C.E.A Versátil</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex items-center gap-8" aria-label="Navegación principal">
+                <ul id="desktopNavList" class="flex items-center gap-6"></ul>
+            </nav>
+
+            <!-- Right Actions -->
+            <div class="flex items-center gap-3">
+                <button id="cartToggleBtn" class="relative p-2 text-gray-600 hover:text-purple-700 transition" aria-label="Abrir carrito">
+                    <i class="fas fa-shopping-bag text-xl"></i>
+                    <span id="cartBadge" class="cart-count hidden">0</span>
+                </button>
+                <button id="menuToggleBtn" class="md:hidden p-2 text-gray-600 hover:text-purple-700 text-2xl" aria-label="Abrir menú">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section id="hero" class="min-h-screen gradient-hero pt-20 md:pt-24 flex items-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-10 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style="animation-delay:1s"></div>
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+        <div class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="space-y-6 fade-in-up">
+                <div class="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    <span class="text-sm font-medium text-gray-600">Abierto hoy · 9:00 AM - 7:00 PM</span>
+                </div>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                    <span class="gradient-text">C.E.A</span>
+                    <br>
+                    <span class="text-gray-900">Versátil</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-gray-600 font-light leading-relaxed">
+                    Creemos en la belleza auténtica. Por eso <span class="font-semibold text-purple-700">realzamos tu mirada</span> con cejas, pestañas y mucho más.
+                </p>
+                <p class="text-base text-gray-500 italic border-l-4 border-purple-300 pl-4">
+                    "La salud no se compara, se cultiva"
+                </p>
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <a href="#servicios" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fas fa-spa"></i> Ver Servicios
+                    </a>
+                    <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fab fa-whatsapp"></i> Contáctanos
+                    </a>
+                </div>
+                <!-- Social strip -->
+                <div class="flex items-center gap-4 pt-4">
+                    <span class="text-sm text-gray-400">Síguenos</span>
+                    <div class="flex gap-3" id="heroSocial"></div>
+                </div>
+            </div>
+            <div class="relative flex justify-center fade-in-up" style="transition-delay:0.2s">
+                <div class="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96">
+                    <div class="absolute inset-0 rounded-full gradient-primary opacity-20 blur-3xl"></div>
+                    <img src="https://picsum.photos/400/400?random=1" alt="Mujer con estilo y belleza natural en salón C.E.A Versátil" loading="eager" class="relative z-10 w-full h-full object-cover rounded-3xl shadow-2xl border-4 border-white/50">
+                    <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg px-5 py-3 flex items-center gap-3 floating">
+                        <i class="fas fa-star text-yellow-400 text-xl"></i>
+                        <span class="font-semibold text-sm">+500 clientas felices</span>
+                    </div>
+                    <div class="absolute -top-3 -right-3 bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2">
+                        <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                        <span class="font-semibold text-sm">100% seguro</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== MENSAJE A CLIENTAS ===== -->
+<section id="mensaje" class="py-16 md:py-24 bg-white" aria-label="Mensaje a nuestras clientas">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-in-up">
+        <div class="inline-flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-full mb-6">
+            <i class="fas fa-heart text-pink-500"></i>
+            <span class="text-sm font-medium text-pink-700">Para ti, hermosa clienta</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold text-gray-900 mb-6 leading-tight">
+            Gracias por ser parte de <span class="gradient-text">esta familia</span>
+        </h2>
+        <div class="prose prose-lg mx-auto text-gray-600 space-y-4 max-w-2xl">
+            <p class="text-lg leading-relaxed">
+                A nuestras hermosas clientas: gracias por ser parte de esta familia que crece cada día. 
+                Su confianza, apoyo y fidelidad son el motor que nos impulsa a seguir mejorando. <span class="text-pink-500">💖</span>
+            </p>
+            <p class="text-lg leading-relaxed">
+                Estamos felices de anunciar que seguimos evolucionando para brindarles una mejor experiencia, 
+                con nuevas mejoras en nuestro sistema y la llegada de un nuevo creador digital que nos ayudará 
+                a compartir con ustedes aún más inspiración, tendencias y contenido de belleza. <span class="text-purple-500">🌸</span>
+            </p>
+            <p class="text-lg leading-relaxed">
+                Seguimos comprometidos con ofrecerles lo mejor en <strong>uñas, extensiones de cabello humano</strong> 
+                y <strong>productos naturales</strong>, porque creemos que cada detalle cuenta cuando se trata de resaltar su belleza. 
+                Gracias por elegirnos una y otra vez. <strong>Lo mejor está por venir.</strong> 
+                <span class="text-yellow-500">✨</span><span class="text-pink-500">💅</span><span class="text-green-500">🌿</span>
+            </p>
+        </div>
+        <div class="mt-8 flex flex-wrap justify-center gap-3 text-sm text-gray-400">
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#ClientasFelices</span>
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#BellezaConPropósito</span>
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#UñasPerfectas</span>
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#ExtensionesHumanas</span>
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#ProductosNaturales</span>
+            <span class="px-3 py-1 bg-gray-50 rounded-full">#GraciasPorSuConfianza</span>
+        </div>
+        <div class="mt-6 text-4xl">💕</div>
+    </div>
+</section>
+
+<!-- ===== SERVICIOS / PRODUCTOS (E-COMMERCE) ===== -->
+<section id="servicios" class="py-16 md:py-24 bg-gradient-to-b from-purple-50 to-white" aria-label="Servicios y productos">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12 fade-in-up">
+            <span class="inline-block text-sm font-semibold text-purple-700 bg-purple-100 px-4 py-1.5 rounded-full mb-4">Catálogo</span>
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold text-gray-900 mb-4">
+                Nuestros <span class="gradient-text">Servicios</span>
+            </h2>
+            <p class="text-gray-500 max-w-xl mx-auto">Explora nuestra selección de servicios y productos naturales para realzar tu belleza auténtica.</p>
+        </div>
+        <!-- Filters -->
+        <div class="flex flex-wrap justify-center gap-2 mb-10 fade-in-up" id="filterButtons"></div>
+        <!-- Grid -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </div>
+</section>
+
+<!-- ===== UBICACIÓN Y CONTACTO ===== -->
+<section id="ubicacion" class="py-16 md:py-24 bg-white" aria-label="Ubicación y contacto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="fade-in-up space-y-6">
+                <span class="inline-block text-sm font-semibold text-purple-700 bg-purple-100 px-4 py-1.5 rounded-full">Visítanos</span>
+                <h2 class="text-3xl sm:text-4xl font-playfair font-bold text-gray-900">Encuentra tu <span class="gradient-text">estilo</span></h2>
+                <div class="space-y-4 text-gray-600">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 flex-shrink-0">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Dirección</p>
+                            <p>Calle 73 con Cra 26i esquina (Av. Ciudad de Cali)</p>
+                            <p class="text-sm text-gray-400">Santiago de Cali, Colombia</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 flex-shrink-0">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Pedidos y Domicilios</p>
+                            <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="text-purple-700 hover:text-purple-900 font-medium text-lg">317 3933141</a>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Horarios</p>
+                            <p>Lun - Sáb: 9:00 AM - 7:00 PM</p>
+                            <p class="text-sm text-gray-400">Domingos: cerrado</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fab fa-whatsapp"></i> Pedir Domicilio
+                    </a>
+                    <a href="https://maps.google.com/?q=Calle+73+con+Cra+26i+esquina+Av+Ciudad+de+Cali+Santiago+de+Cali+Colombia" target="_blank" rel="noopener" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fas fa-directions"></i> Cómo llegar
+                    </a>
+                </div>
+                <!-- Social -->
+                <div class="pt-4">
+                    <p class="text-sm font-medium text-gray-500 mb-3">Síguenos en redes</p>
+                    <div id="footerSocial" class="flex gap-3"></div>
+                </div>
+            </div>
+            <div class="fade-in-up" style="transition-delay:0.2s">
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-100">
+                    <iframe
+                        title="Ubicación del salón C.E.A Versátil en Cali"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3982.5!2d-76.5!3d3.45!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM8KwMjcnMDAuMCJOIDc2wrAzMCcwMC4wIlc!5e0!3m2!1ses!2sco!4v1"
+                        width="100%"
+                        height="380"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-gray-900 text-gray-300 py-12" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm">C</span>
+                    <span class="font-playfair font-bold text-xl text-white">C.E.A Versátil</span>
+                </div>
+                <p class="text-sm text-gray-400 leading-relaxed">
+                    Creemos en la belleza auténtica. Salón de belleza en Cali especializado en uñas, extensiones de cabello humano y productos naturales.
+                </p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-white mb-4">Enlaces rápidos</h3>
+                <ul id="footerLinks" class="space-y-2"></ul>
+            </div>
+            <div>
+                <h3 class="font-semibold text-white mb-4">Contacto</h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2"><i class="fab fa-whatsapp text-green-400"></i> <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="hover:text-white transition">317 3933141</a></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-map-marker-alt text-purple-400"></i> Calle 73 con Cra 26i, Cali</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-clock text-yellow-400"></i> Lun-Sáb 9AM-7PM</li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <p>&copy; 2025 C.E.A Versátil. Todos los derechos reservados.</p>
+            <p class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-green-400"></i> Conexión segura · Tus datos protegidos
+            </p>
+        </div>
+    </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="main.js" defer></script>
+</body>
+</html>
