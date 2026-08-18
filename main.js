@@ -1,4 +1,3 @@
-
 (function() {
     "use strict";
 
@@ -9,6 +8,11 @@
         return str.replace(/[&<>"'\/]/g, c => map[c]);
     }
 
+    // ===== BUSINESS HOURS: 9:00 AM - 9:00 PM =====
+    const BUSINESS_OPEN_HOUR = 9;   // 9:00 AM
+    const BUSINESS_CLOSE_HOUR = 21; // 9:00 PM (después de esta hora, cerrado)
+    const SLOT_MINUTES = 30;        // franjas de citas cada 30 min
+
     // ===== DATA LAYER =====
 
     // Navigation items
@@ -16,6 +20,7 @@
         { label: 'Inicio', href: '#hero' },
         { label: 'Mensaje', href: '#mensaje' },
         { label: 'Servicios', href: '#servicios' },
+        { label: 'Citas', href: '#citas' },
         { label: 'Ubicación', href: '#ubicacion' }
     ];
 
@@ -35,7 +40,7 @@
         { id: 'cejas', label: '👁️ Cejas & Pestañas' }
     ];
 
-    // Products (e-commerce data)
+    // Products / Services (usados tanto en el carrito de domicilios como en las citas)
     const products = [
         { id: 1, name: 'Manicure Clásico', category: 'unas', price: 45000, image: 'https://picsum.photos/300/300?random=10', description: 'Limpieza, corte, limado y esmaltado tradicional.' },
         { id: 2, name: 'Manicure Gelish', category: 'unas', price: 65000, image: 'https://picsum.photos/300/300?random=11', description: 'Esmaltado semipermanente de larga duración.' },
@@ -65,7 +70,7 @@
         ).join('');
     }
 
-    function renderSocial(items, container) {
+    function renderSocial(items) {
         return items.map(s =>
             `<a href="${sanitize(s.url)}" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 ${s.color} transition hover:bg-gray-200" aria-label="${sanitize(s.label)}">
                 <i class="${s.icon}"></i>
@@ -138,30 +143,25 @@
     let cart = []; // { id, qty }
     let currentCategory = 'todas';
 
-    // ===== MOUNT =====
-
-    // Nav
+    // ===== MOUNT: NAV / SOCIAL / FOOTER =====
     const desktopNavEl = document.getElementById('desktopNavList');
     if (desktopNavEl) desktopNavEl.innerHTML = renderNav(navItems);
 
     const mobileNavEl = document.getElementById('mobileNavList');
     if (mobileNavEl) mobileNavEl.innerHTML = renderMobileNav(navItems);
 
-    // Social
     const heroSocial = document.getElementById('heroSocial');
     if (heroSocial) heroSocial.innerHTML = renderSocial(socialLinks);
     const footerSocial = document.getElementById('footerSocial');
     if (footerSocial) footerSocial.innerHTML = renderSocial(socialLinks);
 
-    // Footer links
     const footerLinksEl = document.getElementById('footerLinks');
     if (footerLinksEl) footerLinksEl.innerHTML = renderFooterLinks(navItems);
 
-    // Filters
+    // ===== MOUNT: FILTROS Y PRODUCTOS =====
     const filterContainer = document.getElementById('filterButtons');
     if (filterContainer) filterContainer.innerHTML = renderFilterButtons(categories, currentCategory);
 
-    // Products
     function renderProductGrid(category) {
         const grid = document.getElementById('productGrid');
         if (!grid) return;
@@ -170,7 +170,7 @@
     }
     renderProductGrid(currentCategory);
 
-    // Cart UI
+    // ===== CARRITO DE DOMICILIOS =====
     function updateCartUI() {
         const badge = document.getElementById('cartBadge');
         const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -194,18 +194,6 @@
         }
     }
 
-    // ===== TOAST =====
-    let toastTimeout;
-    function showToast(message, icon = 'fas fa-check-circle') {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        clearTimeout(toastTimeout);
-        toast.innerHTML = `<i class="${icon}"></i> ${sanitize(message)}`;
-        toast.classList.add('show');
-        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // ===== CART HELPERS =====
     function addToCart(id) {
         const existing = cart.find(item => item.id === id);
         if (existing) {
@@ -235,7 +223,219 @@
         updateCartUI();
     }
 
-    // ===== EVENT DELEGATION =====
+    // ===== TOAST =====
+    let toastTimeout;
+    function showToast(message, icon = 'fas fa-check-circle') {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        clearTimeout(toastTimeout);
+        toast.innerHTML = `<i class="${icon}"></i> ${sanitize(message)}`;
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ===== HORARIO DE ATENCIÓN (9:00 AM - 9:00 PM) =====
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    function isBusinessOpenNow() {
+        const now = new Date();
+        const h = now.getHours();
+        return h >= BUSINESS_OPEN_HOUR && h < BUSINESS_CLOSE_HOUR;
+    }
+
+    function updateOpenStatus() {
+        const textEl = document.getElementById('openStatusText');
+        const dotEl = document.getElementById('openStatusDot');
+        if (!textEl) return;
+        const open = isBusinessOpenNow();
+        textEl.textContent = open
+            ? 'Abierto ahora · 9:00 AM - 9:00 PM'
+            : 'Cerrado ahora · Abrimos 9:00 AM';
+        if (dotEl) {
+            dotEl.classList.toggle('bg-green-500', open);
+            dotEl.classList.toggle('bg-red-400', !open);
+        }
+    }
+
+    // ===== CITAS: EVITAR CHOQUES DE HORARIO =====
+    const APPOINTMENTS_KEY = 'cea_appointments';
+
+    function getAppointments() {
+        try {
+            const raw = localStorage.getItem(APPOINTMENTS_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveAppointments(list) {
+        try {
+            localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(list));
+        } catch (e) {
+            // almacenamiento no disponible; la cita igual se confirma por WhatsApp
+        }
+    }
+
+    function todayISO() {
+        const d = new Date();
+        return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+
+    // Genera las franjas horarias del día: 09:00, 09:30 ... 20:30 (última franja antes de las 9:00 PM)
+    function generateTimeSlots() {
+        const slots = [];
+        for (let h = BUSINESS_OPEN_HOUR; h < BUSINESS_CLOSE_HOUR; h++) {
+            for (let m = 0; m < 60; m += SLOT_MINUTES) {
+                slots.push(`${pad2(h)}:${pad2(m)}`);
+            }
+        }
+        return slots;
+    }
+
+    function isPastSlot(dateStr, timeStr) {
+        const slotDate = new Date(`${dateStr}T${timeStr}:00`);
+        return slotDate.getTime() < Date.now();
+    }
+
+    function isWithinBusinessHours(timeStr) {
+        const [h] = timeStr.split(':').map(Number);
+        return h >= BUSINESS_OPEN_HOUR && h < BUSINESS_CLOSE_HOUR;
+    }
+
+    function populateServiceOptions() {
+        const el = document.getElementById('apptService');
+        if (!el) return;
+        el.innerHTML = '<option value="">Elige un servicio</option>' +
+            products.map(p => `<option value="${p.id}">${sanitize(p.name)} — $${p.price.toLocaleString('es-CO')}</option>`).join('');
+    }
+
+    // Rellena el select de horas según la fecha elegida, quitando las horas ya ocupadas y las que ya pasaron
+    function populateTimeOptions() {
+        const dateInput = document.getElementById('apptDate');
+        const timeSelect = document.getElementById('apptTime');
+        if (!dateInput || !timeSelect) return;
+
+        const dateVal = dateInput.value;
+        if (!dateVal) {
+            timeSelect.innerHTML = '<option value="">Selecciona una fecha primero</option>';
+            return;
+        }
+
+        const bookedTimes = getAppointments()
+            .filter(a => a.date === dateVal)
+            .map(a => a.time);
+
+        const available = generateTimeSlots().filter(t =>
+            !bookedTimes.includes(t) && !isPastSlot(dateVal, t)
+        );
+
+        if (!available.length) {
+            timeSelect.innerHTML = '<option value="">No hay horarios disponibles este día</option>';
+            return;
+        }
+
+        timeSelect.innerHTML = '<option value="">Elige una hora</option>' +
+            available.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    function showApptMsg(text, ok) {
+        const msgEl = document.getElementById('apptMsg');
+        if (!msgEl) return;
+        msgEl.textContent = text;
+        msgEl.className = 'text-sm ' + (ok ? 'text-green-600' : 'text-red-500');
+        msgEl.classList.remove('hidden');
+    }
+
+    function initAppointments() {
+        populateServiceOptions();
+
+        const dateInput = document.getElementById('apptDate');
+        if (dateInput) {
+            const min = todayISO();
+            dateInput.min = min;
+            dateInput.value = min;
+            dateInput.addEventListener('change', populateTimeOptions);
+        }
+        populateTimeOptions();
+
+        const form = document.getElementById('appointmentForm');
+        if (!form) return;
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('apptName').value.trim();
+            const phone = document.getElementById('apptPhone').value.trim();
+            const serviceId = parseInt(document.getElementById('apptService').value, 10);
+            const date = document.getElementById('apptDate').value;
+            const time = document.getElementById('apptTime').value;
+
+            if (!name || !phone || !serviceId || !date || !time) {
+                showApptMsg('Por favor completa todos los campos.', false);
+                return;
+            }
+
+            // Validar dentro del horario de atención 9:00 AM - 9:00 PM
+            if (!isWithinBusinessHours(time)) {
+                showApptMsg('Ese horario está fuera de nuestra atención (9:00 AM - 9:00 PM). Estamos cerrados.', false);
+                populateTimeOptions();
+                return;
+            }
+
+            // No permitir horas pasadas
+            if (isPastSlot(date, time)) {
+                showApptMsg('Ese horario ya pasó. Por favor elige otro.', false);
+                populateTimeOptions();
+                return;
+            }
+
+            // Revalidar disponibilidad para evitar choques de citas (doble reserva)
+            const currentAppointments = getAppointments();
+            const clash = currentAppointments.some(a => a.date === date && a.time === time);
+            if (clash) {
+                showApptMsg('Lo sentimos, ese horario acaba de ser reservado por otra persona. Elige otro.', false);
+                populateTimeOptions();
+                return;
+            }
+
+            const service = products.find(p => p.id === serviceId);
+
+            // Guardar la cita para bloquear ese horario y que no choque con otras
+            currentAppointments.push({
+                id: Date.now(),
+                date,
+                time,
+                serviceId,
+                serviceName: service ? service.name : '',
+                name,
+                phone
+            });
+            saveAppointments(currentAppointments);
+
+            const fechaLegible = new Date(`${date}T${time}:00`).toLocaleDateString('es-CO', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+
+            const waMsg =
+                `¡Hola! Quiero confirmar mi cita 💇✨%0A%0A` +
+                `👤 Nombre: ${name}%0A` +
+                `💅 Servicio: ${service ? service.name : ''}%0A` +
+                `📅 Fecha: ${fechaLegible}%0A` +
+                `🕐 Hora: ${time}%0A` +
+                `📞 Tel: ${phone}%0A%0A` +
+                `📍 Calle 73 con Cra 26i - Cali`;
+
+            window.open(`https://wa.me/573173933141?text=${waMsg}`, '_blank', 'noopener');
+
+            showApptMsg('¡Cita agendada con éxito! Te esperamos 💜', true);
+            form.reset();
+            if (dateInput) dateInput.value = todayISO();
+            populateTimeOptions();
+        });
+    }
+
+    // ===== EVENT DELEGATION (click) =====
     document.addEventListener('click', function(e) {
         // --- Smooth scroll for anchor links ---
         const link = e.target.closest('a[href^="#"]');
@@ -244,7 +444,6 @@
             const target = document.querySelector(link.getAttribute('href'));
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
-                // Close mobile nav if open
                 closeMobileNav();
             }
             return;
@@ -294,8 +493,7 @@
         }
 
         // --- Cart toggle ---
-        const cartToggle = e.target.closest('#cartToggleBtn');
-        if (cartToggle) {
+        if (e.target.closest('#cartToggleBtn')) {
             e.preventDefault();
             toggleCart();
             return;
@@ -308,8 +506,7 @@
         }
 
         // --- Menu toggle ---
-        const menuBtn = e.target.closest('#menuToggleBtn');
-        if (menuBtn) {
+        if (e.target.closest('#menuToggleBtn')) {
             e.preventDefault();
             toggleMobileNav();
             return;
@@ -322,22 +519,20 @@
         }
 
         // --- Close mobile from close button ---
-        const closeMobile = e.target.closest('#closeMobileBtn');
-        if (closeMobile) {
+        if (e.target.closest('#closeMobileBtn')) {
             e.preventDefault();
             closeMobileNav();
             return;
         }
 
         // --- Close cart from close button ---
-        const closeCartBtn = e.target.closest('#closeCartBtn');
-        if (closeCartBtn) {
+        if (e.target.closest('#closeCartBtn')) {
             e.preventDefault();
             closeCart();
             return;
         }
 
-        // --- Checkout ---
+        // --- Checkout / Pedido a domicilio ---
         const checkoutBtn = e.target.closest('#checkoutBtn');
         if (checkoutBtn) {
             e.preventDefault();
@@ -345,17 +540,67 @@
                 showToast('Tu carrito está vacío', 'fas fa-exclamation-circle');
                 return;
             }
+
+            const nameEl = document.getElementById('cartName');
+            const phoneEl = document.getElementById('cartPhone');
+            const neighborhoodEl = document.getElementById('cartNeighborhood');
+            const addressEl = document.getElementById('cartAddress');
+
+            const custName = nameEl ? nameEl.value.trim() : '';
+            const custPhone = phoneEl ? phoneEl.value.trim() : '';
+            const neighborhood = neighborhoodEl ? neighborhoodEl.value.trim() : '';
+            const address = addressEl ? addressEl.value.trim() : '';
+
+            if (!custName) {
+                showToast('Por favor ingresa tu nombre', 'fas fa-exclamation-circle');
+                if (nameEl) nameEl.focus();
+                return;
+            }
+            if (!custPhone) {
+                showToast('Por favor ingresa tu teléfono', 'fas fa-exclamation-circle');
+                if (phoneEl) phoneEl.focus();
+                return;
+            }
+            if (!neighborhood) {
+                showToast('Por favor ingresa tu barrio', 'fas fa-exclamation-circle');
+                if (neighborhoodEl) neighborhoodEl.focus();
+                return;
+            }
+            if (!address) {
+                showToast('Por favor ingresa tu dirección de domicilio', 'fas fa-exclamation-circle');
+                if (addressEl) addressEl.focus();
+                return;
+            }
+
             const total = cart.reduce((sum, item) => {
                 const p = products.find(pr => pr.id === item.id);
                 return sum + (p ? p.price * item.qty : 0);
             }, 0);
-            const message = cart.map(item => {
+
+            const itemsMsg = cart.map(item => {
                 const p = products.find(pr => pr.id === item.id);
                 return p ? `• ${p.name} x${item.qty} = $${(p.price * item.qty).toLocaleString('es-CO')}` : '';
             }).join('%0A');
-            const fullMsg = `¡Hola! Quiero hacer un pedido:%0A%0A${message}%0A%0ATotal: $${total.toLocaleString('es-CO')}%0A%0A📍 Calle 73 con Cra 26i - Cali%0A💳 ¿Cómo puedo pagar?`;
+
+            const fullMsg =
+                `¡Hola! Quiero hacer un pedido a domicilio 🛍️:%0A%0A` +
+                `${itemsMsg}%0A%0A` +
+                `Total: $${total.toLocaleString('es-CO')}%0A%0A` +
+                `👤 Nombre: ${custName}%0A` +
+                `📞 Teléfono: ${custPhone}%0A` +
+                `🏘️ Barrio: ${neighborhood}%0A` +
+                `🏠 Dirección: ${address}%0A` +
+                `📍 Salón: Calle 73 con Cra 26i - Cali%0A` +
+                `💳 ¿Cómo puedo pagar?`;
+
             window.open(`https://wa.me/573173933141?text=${fullMsg}`, '_blank', 'noopener');
             showToast('Redirigiendo a WhatsApp...', 'fab fa-whatsapp');
+
+            // Limpiar formulario de entrega tras el pedido
+            if (nameEl) nameEl.value = '';
+            if (phoneEl) phoneEl.value = '';
+            if (neighborhoodEl) neighborhoodEl.value = '';
+            if (addressEl) addressEl.value = '';
         }
     });
 
@@ -408,15 +653,15 @@
     // ===== SANITIZE ALL INPUTS (security) =====
     document.addEventListener('input', function(e) {
         if (e.target.matches('input, textarea')) {
-            // Basic sanitization: strip script tags
             e.target.value = e.target.value.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
         }
     });
 
-    // ===== CSP NONCE-LIKE: Prevent XSS in innerHTML (already sanitized in renders) =====
-
     // ===== INIT =====
     updateCartUI();
+    updateOpenStatus();
+    setInterval(updateOpenStatus, 60000); // refresca el estado abierto/cerrado cada minuto
+    initAppointments();
 
     // Handle keyboard: Escape to close modals
     document.addEventListener('keydown', function(e) {
@@ -429,5 +674,6 @@
     console.log('🛡️ C.E.A Versátil — Conexión segura activa');
     console.log('🔒 Content Security Policy habilitada');
     console.log('🧹 Sanitización de inputs activa');
-    console.log('📦 Modo e-commerce listo');
+    console.log('📦 Modo e-commerce (domicilios) listo');
+    console.log('📅 Sistema de citas activo · Horario 9:00 AM - 9:00 PM');
 })();

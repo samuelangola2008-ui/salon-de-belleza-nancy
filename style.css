@@ -1,5 +1,4 @@
-
-        :root {
+:root {
             --primary: #8B5CF6;
             --primary-dark: #7C3AED;
             --secondary: #EC4899;
@@ -37,6 +36,12 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(139,92,246,0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         .btn-outline {
             border: 2px solid var(--primary);
@@ -183,4 +188,7 @@
         @media (max-width: 480px) {
             .cart-sidebar { width: 100vw; max-width: 100vw; }
         }
-  
+        /* Appointment form messages */
+        #apptMsg.text-green-600 { color: #059669; }
+        #apptMsg.text-red-500 { color: #EF4444; }
+        #apptTime option:disabled { color: #d1d5db; }

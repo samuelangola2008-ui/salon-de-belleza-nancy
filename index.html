@@ -41,8 +41,8 @@
 <!-- ===== CART OVERLAY ===== -->
 <div id="cartOverlay" class="cart-overlay" aria-hidden="true"></div>
 
-<!-- ===== CART SIDEBAR ===== -->
-<aside id="cartSidebar" class="cart-sidebar" role="dialog" aria-label="Carrito de compras">
+<!-- ===== CART SIDEBAR (DOMICILIOS) ===== -->
+<aside id="cartSidebar" class="cart-sidebar" role="dialog" aria-label="Carrito de domicilios">
     <div class="flex items-center justify-between p-5 border-b border-gray-100">
         <h2 class="font-playfair text-xl font-bold flex items-center gap-2">
             <i class="fas fa-shopping-bag text-purple-600"></i> Tu Carrito
@@ -52,15 +52,42 @@
     <div id="cartItems" class="flex-1 overflow-y-auto p-5 space-y-4">
         <!-- rendered by JS -->
     </div>
-    <div class="border-t border-gray-100 p-5 space-y-3">
-        <div class="flex justify-between text-lg font-semibold">
+    <div class="border-t border-gray-100 p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+        <p class="text-xs font-semibold text-gray-700 flex items-center gap-2 pt-1">
+            <i class="fas fa-truck text-purple-500"></i> Datos para la entrega
+        </p>
+        <div>
+            <label for="cartName" class="block text-xs font-semibold text-gray-500 mb-1">
+                <i class="fas fa-user text-purple-500"></i> Nombre completo
+            </label>
+            <input type="text" id="cartName" placeholder="Tu nombre" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition">
+        </div>
+        <div>
+            <label for="cartPhone" class="block text-xs font-semibold text-gray-500 mb-1">
+                <i class="fas fa-phone text-purple-500"></i> Teléfono / WhatsApp
+            </label>
+            <input type="tel" id="cartPhone" placeholder="Ej: 3001234567" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition">
+        </div>
+        <div>
+            <label for="cartNeighborhood" class="block text-xs font-semibold text-gray-500 mb-1">
+                <i class="fas fa-map-signs text-purple-500"></i> Barrio
+            </label>
+            <input type="text" id="cartNeighborhood" placeholder="Ej: San Fernando" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition">
+        </div>
+        <div>
+            <label for="cartAddress" class="block text-xs font-semibold text-gray-500 mb-1">
+                <i class="fas fa-map-marker-alt text-purple-500"></i> Dirección (calle, número, referencia)
+            </label>
+            <input type="text" id="cartAddress" placeholder="Calle, número, apto, referencia..." class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition">
+        </div>
+        <div class="flex justify-between text-lg font-semibold pt-1">
             <span>Total</span>
             <span id="cartTotal">$0</span>
         </div>
         <button id="checkoutBtn" class="btn-primary w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
-            <i class="fas fa-lock"></i> Proceder al Pago
+            <i class="fas fa-lock"></i> Pedir a Domicilio
         </button>
-        <p class="text-xs text-gray-400 text-center">Pago 100% seguro 🔒</p>
+        <p class="text-xs text-gray-400 text-center">Pago 100% seguro 🔒 · Entregamos a domicilio</p>
     </div>
 </aside>
 
@@ -81,6 +108,9 @@
 
             <!-- Right Actions -->
             <div class="flex items-center gap-3">
+                <a href="#citas" class="hidden sm:flex btn-primary px-4 py-2 rounded-full text-xs font-semibold items-center gap-2">
+                    <i class="fas fa-calendar-check"></i> Agendar Cita
+                </a>
                 <button id="cartToggleBtn" class="relative p-2 text-gray-600 hover:text-purple-700 transition" aria-label="Abrir carrito">
                     <i class="fas fa-shopping-bag text-xl"></i>
                     <span id="cartBadge" class="cart-count hidden">0</span>
@@ -103,8 +133,8 @@
         <div class="grid md:grid-cols-2 gap-10 items-center">
             <div class="space-y-6 fade-in-up">
                 <div class="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-                    <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
-                    <span class="text-sm font-medium text-gray-600">Abierto hoy · 9:00 AM - 7:00 PM</span>
+                    <span id="openStatusDot" class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    <span id="openStatusText" class="text-sm font-medium text-gray-600">9:00 AM - 9:00 PM</span>
                 </div>
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
                     <span class="gradient-text">C.E.A</span>
@@ -118,7 +148,10 @@
                     "La salud no se compara, se cultiva"
                 </p>
                 <div class="flex flex-wrap gap-3 pt-2">
-                    <a href="#servicios" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                    <a href="#citas" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fas fa-calendar-check"></i> Agendar Cita
+                    </a>
+                    <a href="#servicios" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
                         <i class="fas fa-spa"></i> Ver Servicios
                     </a>
                     <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
@@ -137,8 +170,6 @@
                     <img src="img.jpg.png" alt="Mujer con estilo y belleza natural en salón C.E.A Versátil" loading="eager" class="relative z-10 w-full h-full object-cover rounded-3xl shadow-2xl border-4 border-white/50">
                     <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg px-5 py-3 flex items-center gap-3 floating">
                         <i class="fas fa-star text-yellow-400 text-xl"></i>
-                        
-                           
                     </div>
                 </div>
             </div>
@@ -168,8 +199,6 @@
 
                   Gracias por elegirnos siempre. ¡Lo mejor está por venir! ✨. <span class="text-pink-500">💖</span>
             </p>
-            
-            
         </div>
         <div class="mt-8 flex flex-wrap justify-center gap-3 text-sm text-gray-400">
             <span class="px-3 py-1 bg-gray-50 rounded-full">#ClientasFelices</span>
@@ -191,12 +220,67 @@
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold text-gray-900 mb-4">
                 Nuestros <span class="gradient-text">Servicios</span>
             </h2>
-            <p class="text-gray-500 max-w-xl mx-auto">Explora nuestra selección de servicios y productos naturales para realzar tu belleza auténtica.</p>
+            <p class="text-gray-500 max-w-xl mx-auto">Explora nuestra selección de servicios y productos naturales para realzar tu belleza auténtica. Agrégalos al carrito y te los llevamos a domicilio.</p>
         </div>
         <!-- Filters -->
         <div class="flex flex-wrap justify-center gap-2 mb-10 fade-in-up" id="filterButtons"></div>
         <!-- Grid -->
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </div>
+</section>
+
+<!-- ===== AGENDAR CITA ===== -->
+<section id="citas" class="py-16 md:py-24 bg-gradient-to-b from-white to-purple-50" aria-label="Agenda tu cita">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10 fade-in-up">
+            <span class="inline-block text-sm font-semibold text-purple-700 bg-purple-100 px-4 py-1.5 rounded-full mb-4">Agenda</span>
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold text-gray-900 mb-4">
+                Agenda tu <span class="gradient-text">Cita</span>
+            </h2>
+            <p class="text-gray-500 max-w-xl mx-auto">Elige el servicio, la fecha y la hora que prefieras. Atendemos todos los días de <strong>9:00 AM a 9:00 PM</strong>.</p>
+        </div>
+
+        <form id="appointmentForm" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 space-y-5 fade-in-up" novalidate>
+            <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                    <label for="apptName" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                    <input type="text" id="apptName" name="apptName" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition" placeholder="Tu nombre">
+                </div>
+                <div>
+                    <label for="apptPhone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono / WhatsApp</label>
+                    <input type="tel" id="apptPhone" name="apptPhone" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition" placeholder="Ej: 3001234567">
+                </div>
+            </div>
+
+            <div>
+                <label for="apptService" class="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
+                <select id="apptService" name="apptService" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition bg-white">
+                    <option value="">Elige un servicio</option>
+                </select>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                    <label for="apptDate" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" id="apptDate" name="apptDate" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition">
+                </div>
+                <div>
+                    <label for="apptTime" class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                    <select id="apptTime" name="apptTime" required class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition bg-white">
+                        <option value="">Selecciona una fecha primero</option>
+                    </select>
+                </div>
+            </div>
+
+            <p id="apptMsg" class="text-sm hidden" role="status"></p>
+
+            <button type="submit" class="btn-primary w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
+                <i class="fab fa-whatsapp"></i> Confirmar Cita por WhatsApp
+            </button>
+            <p class="text-xs text-gray-400 text-center">
+                <i class="fas fa-clock"></i> Horario de atención: 9:00 AM – 9:00 PM. Fuera de este horario permanecemos cerrados y las citas ya reservadas no se muestran disponibles para evitar choques de horario.
+            </p>
+        </form>
     </div>
 </section>
 
@@ -233,13 +317,16 @@
                         </div>
                         <div>
                             <p class="font-semibold text-gray-900">Horarios</p>
-                            <p>Lun - Sáb: 9:00 AM - 7:00 PM</p>
-                            <p class="text-sm text-gray-400">Domingos: cerrado</p>
+                            <p>Todos los días: 9:00 AM - 9:00 PM</p>
+                            <p class="text-sm text-gray-400">Fuera de este horario, cerrado</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-3 pt-2">
-                    <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                    <a href="#citas" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i class="fas fa-calendar-check"></i> Agendar Cita
+                    </a>
+                    <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
                         <i class="fab fa-whatsapp"></i> Pedir Domicilio
                     </a>
                     <a href="https://maps.google.com/?q=Calle+73+con+Cra+26i+esquina+Av+Ciudad+de+Cali+Santiago+de+Cali+Colombia" target="_blank" rel="noopener" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm flex items-center gap-2">
@@ -292,7 +379,7 @@
                 <ul class="space-y-2 text-sm">
                     <li class="flex items-center gap-2"><i class="fab fa-whatsapp text-green-400"></i> <a href="https://wa.me/573173933141" target="_blank" rel="noopener" class="hover:text-white transition">317 3933141</a></li>
                     <li class="flex items-center gap-2"><i class="fas fa-map-marker-alt text-purple-400"></i> Calle 73 con Cra 26i, Cali</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-clock text-yellow-400"></i> Lun-Sáb 9AM-7PM</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-clock text-yellow-400"></i> Todos los días 9AM-9PM</li>
                 </ul>
             </div>
         </div>
