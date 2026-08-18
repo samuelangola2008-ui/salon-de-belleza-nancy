@@ -303,6 +303,15 @@
         return h >= BUSINESS_OPEN_HOUR && h < BUSINESS_CLOSE_HOUR;
     }
 
+    function formatTimeLabel(t) {
+        const [hStr, m] = t.split(':');
+        let h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        let h12 = h % 12;
+        if (h12 === 0) h12 = 12;
+        return `${h12}:${m} ${ampm}`;
+    }
+
     function populateServiceOptions() {
         const el = document.getElementById('apptService');
         if (!el) return;
@@ -336,7 +345,7 @@
         }
 
         timeSelect.innerHTML = '<option value="">Elige una hora</option>' +
-            available.map(t => `<option value="${t}">${t}</option>`).join('');
+            available.map(t => `<option value="${t}">${formatTimeLabel(t)}</option>`).join('');
     }
 
     function showApptMsg(text, ok) {
@@ -422,7 +431,7 @@
                 `👤 Nombre: ${name}%0A` +
                 `💅 Servicio: ${service ? service.name : ''}%0A` +
                 `📅 Fecha: ${fechaLegible}%0A` +
-                `🕐 Hora: ${time}%0A` +
+                `🕐 Hora: ${formatTimeLabel(time)}%0A` +
                 `📞 Tel: ${phone}%0A%0A` +
                 `📍 Calle 73 con Cra 26i - Cali`;
 
